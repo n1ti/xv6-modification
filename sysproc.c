@@ -89,3 +89,8 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+int
+sys_gpi(void)
+{
+	return gpi();
+}

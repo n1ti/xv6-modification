@@ -532,3 +532,42 @@ procdump(void)
     cprintf("\n");
   }
 }
+int 
+gpi()
+{
+	struct proc *p;
+	sti();
+	acquire(&ptable.lock);
+	cprintf("PID\tNAME\tSTATUS\tPPID\tSIZE\tWOC\tKILLED?\n");
+	for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+	{
+		switch(p->state)
+		{
+			case UNUSED:
+				cprintf("%d\t%s\tUNUSED %d\t%d\t%d\t%d\n", p->pid, p->name, (p->parent)->pid, p->sz, p->chan, p->killed);
+				break;
+			case EMBRYO:
+				cprintf("%d\t%s\tEMBRYO %d\t%d\t%d\t%d\n", p->pid, p->name, (p->parent)->pid, p->sz, p->chan, p->killed);
+				break;
+			case SLEEPING:
+				cprintf("%d\t%s\tSLEEPING %d\t%d\t%d\t%d\n", p->pid, p->name, (p->parent)->pid, p->sz, p->chan, p->killed);
+				break;
+			case RUNNABLE:
+				cprintf("%d\t%s\tRUNNABLE %d\t%d\t%d\t%d\n", p->pid, p->name, (p->parent)->pid, p->sz, p->chan, p->killed);
+				break;
+			case RUNNING:
+				cprintf("%d\t%s\tRUNNING %d\t%d\t%d\t%d\n", p->pid, p->name, (p->parent)->pid, p->sz, p->chan, p->killed);
+				break;
+			case ZOMBIE:
+				cprintf("%d\t%s\tZOMBIE %d\t%d\t%d\t%d\n", p->pid, p->name, (p->parent)->pid, p->sz, p->chan, p->killed);
+				break;
+			default:
+				cprintf("yep working");
+		}
+	
+	}
+	release(&ptable.lock);
+	return 23;
+
+
+}

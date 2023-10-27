@@ -94,3 +94,17 @@ sys_gpi(void)
 {
 	return gpi();
 }
+
+int
+sys_wait2(void)
+{
+  int res;
+  int retime = 0;
+  int rutime = 0;
+  int stime = 0;
+  argint(0, &retime);
+  argint(1, &rutime);
+  argint(2, &stime);
+  res = sys_wait();
+
+}

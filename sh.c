@@ -3,6 +3,7 @@
 #include "types.h"
 #include "user.h"
 #include "fcntl.h"
+#include "console.h" //header file with all history functions needed
 
 // Parsed command representation
 #define EXEC  1
@@ -52,6 +53,26 @@ struct backcmd {
 int fork1(void);  // Fork but panics on failure.
 void panic(char*);
 struct cmd *parsecmd(char*);
+
+//History command code here!
+char cmdFromHistory[INPUT_BUF]; //this is the buffer that will get the current history command from history
+
+/*
+  This is the function that calls to the different history indexes.
+*/
+void printHistory() {
+  int i, count = 0;
+  for (i = 0; i < MAX_HISTORY; i++) {
+    // 0 == newest command == historyId (always)
+    if (history(cmdFromHistory, MAX_HISTORY - i - 1) == 0) { // this is the syscall
+      count++;
+      if (count < 10)
+        printf(1, " %d: %s\n", count, cmdFromHistory);
+      else
+        printf(1, "%d: %s\n", count, cmdFromHistory);
+    }
+  }
+}
 
 // Execute cmd.  Never returns.
 void
@@ -162,6 +183,11 @@ main(void)
       buf[strlen(buf)-1] = 0;  // chop \n
       if(chdir(buf+3) < 0)
         printf(2, "cannot cd %s\n", buf+3);
+      continue;
+    }
+    if(buf[0] == 'h' && buf[1] == 'i' && buf[2] == 's' && buf[3] == 't'
+        && buf[4] == 'o' && buf[5] == 'r' && buf[6] == 'y' && buf[7] == '\n') {
+      printHistory();
       continue;
     }
     if(fork1() == 0)

@@ -187,6 +187,27 @@ struct {
   uint e;  // Edit index
 } input;
 
+char charsToBeMoved[INPUT_BUF];  // temporary storage for input.buf in a certain context
+/*
+  this struct will hold the history buffer array
+  For ex:
+  If 5 commands are stored. In this case:
+  * 11,12,13,14,15 indices are occupied in the history table with 11 as the newest.
+  * lastCommandIndex == 11
+  * currentHistory ranges from 0 to 4 (i.e the displacement)
+  * init(currentHistory) = -1
+*/
+struct {
+  char bufferArr[MAX_HISTORY][INPUT_BUF]; // holds the actual command strings -
+  uint lengthsArr[MAX_HISTORY]; // this will hold the length of each command string
+  uint lastCommandIndex;  // the index of the last command entered to history
+  int numOfCommmandsInMem; // number of history commands in mem
+  int currentHistory; // holds the current history view -> displacement from the last command index 
+} historyBufferArray;
+char oldBuf[INPUT_BUF]; // this will hold the details of the command that we were typing before accessing the history
+uint oldBufferLength;
+char buf2[INPUT_BUF];
+
 #define C(x)  ((x)-'@')  // Control-x
 
 void
@@ -229,7 +250,7 @@ consoleintr(int (*getc)(void))
           copyBufferToInputBuffer(historyBufferArray.bufferArr[ tempIndex]  , historyBufferArray.lengthsArr[tempIndex]);
         }
         break;
-    case DOWN_ARROW:
+   case DOWN_ARROW:
         switch(historyBufferArray.currentHistory){
           case -1:
             //does nothing

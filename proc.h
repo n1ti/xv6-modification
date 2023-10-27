@@ -55,6 +55,13 @@ struct proc {
   int rutime;                  //process RUNNING time
 };
 
+uint ctime;
+int stime;
+int retime;
+int rutime;
+
+void updatestatistics();
+
 // Process memory is laid out contiguously, low addresses first:
 //   text
 //   original data and bss

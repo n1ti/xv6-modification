@@ -98,13 +98,19 @@ sys_gpi(void)
 int
 sys_wait2(void)
 {
-  int res;
-  int retime = 0;
-  int rutime = 0;
-  int stime = 0;
-  argint(0, &retime);
-  argint(1, &rutime);
-  argint(2, &stime);
-  res = sys_wait();
+  	struct proc *curproc = myproc();
+  	int res;
+  	int retime = 0;
+  	int rutime = 0;
+	int stime = 0;
+ 	argint(0, &retime);
+	argint(1, &rutime);
+	argint(2, &stime);
+	res = sys_wait();
+	*(int*)retime = curproc->retime;
+	*(int*)rutime = curproc->rutime;
+	*(int*)stime = curproc->stime;
+	cprintf("sys wait is called\n");
+	return res;
 
 }

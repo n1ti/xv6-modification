@@ -297,10 +297,11 @@ consoleintr(int (*getc)(void))
 */
 void
 eraseCurrentLineOnScreen(void) {
-    int length = input.rightmost - input.r;
-    while (length--) {
-      consputc(BACKSPACE);
-    }
+    while(input.e != input.w &&
+            input.buf[(input.e-1) % INPUT_BUF] != '\n'){
+        input.e--;
+        consputc(BACKSPACE);
+      }
 }
 
 /*
@@ -308,7 +309,7 @@ eraseCurrentLineOnScreen(void) {
 */
 void
 copyCharsToBeMovedToOldBuffer(void) {
-    oldBufferLength = input.rightmost - input.r;
+    oldBufferLength = input.e - input.r; //doubt
     for (uint i = 0; i < oldBufferLength; i++) {
       oldBuf[i] = input.buf[(input.r + i) % INPUT_BUF];
     }
@@ -319,7 +320,6 @@ copyCharsToBeMovedToOldBuffer(void) {
 */
 void
 eraseContentOnInputBuffer(){
-  input.rightmost = input.r;
   input.e = input.r;
 }
 
@@ -337,8 +337,7 @@ copyBufferToScreen(char* bufToPrintOnScreen, uint length){
 
 /*
   Copy bufToSaveInInput to input.buf
-  Set input.e and input.rightmost
-  assumes input.r == input.w == input.rightmost == input.e
+  assumes input.r == input.w == input.e
 */
 void
 copyBufferToInputBuffer(char * bufToSaveInInput, uint length){
@@ -347,7 +346,6 @@ copyBufferToInputBuffer(char * bufToSaveInInput, uint length){
   }
 
   input.e = input.r + length;
-  input.rightmost = input.e;
 }
 
 /*
@@ -356,7 +354,7 @@ copyBufferToInputBuffer(char * bufToSaveInInput, uint length){
 */
 void
 saveCommandInHistory(){
-  uint len = input.rightmost - input.r - 1; // -1 to remove the last '\n' character
+  uint len = input.e - input.r - 1; // -1 to remove the last '\n' character
   if (len == 0) return; // to avoid blank commands to store in history
 
   historyBufferArray.currentHistory = -1; // reseting the users history current viewed
@@ -373,6 +371,7 @@ saveCommandInHistory(){
     historyBufferArray.bufferArr[historyBufferArray.lastCommandIndex][i] =  input.buf[(input.r + i) % INPUT_BUF];
   }
 }
+
 
 /*
   this is the function that gets called by the sys_history and writes the requested command history in the buffer

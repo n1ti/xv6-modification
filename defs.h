@@ -21,7 +21,7 @@ void            consoleinit(void);
 void            cprintf(char*, ...);
 void            consoleintr(int(*)(void));
 void            panic(char*) __attribute__((noreturn));
-int             getCmdFromHistory(char *, int );
+int             history(char *, int );
 
 // exec.c
 int             exec(char*, char**);

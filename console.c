@@ -204,9 +204,6 @@ struct {
   int numOfCommmandsInMem; // number of history commands in mem
   int currentHistory; // holds the current history view -> displacement from the last command index 
 } historyBufferArray;
-char oldBuf[INPUT_BUF]; // this will hold the details of the command that we were typing before accessing the history
-uint oldBufferLength;
-char buf2[INPUT_BUF];
 
 #define C(x)  ((x)-'@')  // Control-x
 
@@ -236,18 +233,13 @@ consoleintr(int (*getc)(void))
       }
       break;
     case UP_ARROW:
-       if (historyBufferArray.currentHistory < historyBufferArray.numOfCommmandsInMem-1 ){ // current history means the oldest possible will be MAX_HISTORY-1
+       if (historyBufferArray.currentHistory < historyBufferArray.numOfCommmandsInMem-1){ // current history means the oldest possible will be MAX_HISTORY-1
           eraseCurrentLineOnScreen();
-
-          // store the currently entered command (in the terminal) to the oldbuf
-          if (historyBufferArray.currentHistory == -1)
-              copyCharsToBeMovedToOldBuffer();
-              
           eraseContentOnInputBuffer();
           historyBufferArray.currentHistory++;
           tempIndex = (historyBufferArray.lastCommandIndex + historyBufferArray.currentHistory) % MAX_HISTORY;
-          copyBufferToScreen(historyBufferArray.bufferArr[ tempIndex]  , historyBufferArray.lengthsArr[tempIndex]);
-          copyBufferToInputBuffer(historyBufferArray.bufferArr[ tempIndex]  , historyBufferArray.lengthsArr[tempIndex]);
+          copyBufferToScreen(historyBufferArray.bufferArr[tempIndex] , historyBufferArray.lengthsArr[tempIndex]);
+          copyBufferToInputBuffer(historyBufferArray.bufferArr[tempIndex] , historyBufferArray.lengthsArr[tempIndex]);
         }
         break;
    case DOWN_ARROW:
@@ -256,10 +248,9 @@ consoleintr(int (*getc)(void))
             //does nothing
             break;
 
-          case 0: // get string from old buf
+          case 0: //empty string on the console
             eraseCurrentLineOnScreen();
-            copyBufferToInputBuffer(oldBuf, oldBufferLength);
-            copyBufferToScreen(oldBuf, oldBufferLength);
+            eraseContentOnInputBuffer();
             historyBufferArray.currentHistory--;
             break;
 
@@ -267,8 +258,8 @@ consoleintr(int (*getc)(void))
             eraseCurrentLineOnScreen();
             historyBufferArray.currentHistory--;
             tempIndex = (historyBufferArray.lastCommandIndex + historyBufferArray.currentHistory)%MAX_HISTORY;
-            copyBufferToScreen(historyBufferArray.bufferArr[ tempIndex]  , historyBufferArray.lengthsArr[tempIndex]);
-            copyBufferToInputBuffer(historyBufferArray.bufferArr[ tempIndex]  , historyBufferArray.lengthsArr[tempIndex]);
+            copyBufferToScreen(historyBufferArray.bufferArr[tempIndex] , historyBufferArray.lengthsArr[tempIndex]);
+            copyBufferToInputBuffer(historyBufferArray.bufferArr[tempIndex] , historyBufferArray.lengthsArr[tempIndex]);
             break;
         }
         break;
@@ -305,17 +296,6 @@ eraseCurrentLineOnScreen(void) {
 }
 
 /*
-  Copy input.buf into oldBuf
-*/
-void
-copyCharsToBeMovedToOldBuffer(void) {
-    oldBufferLength = input.e - input.r; //doubt
-    for (uint i = 0; i < oldBufferLength; i++) {
-      oldBuf[i] = input.buf[(input.r + i) % INPUT_BUF];
-    }
-}
-
-/*
   clear input buffer
 */
 void
@@ -337,14 +317,12 @@ copyBufferToScreen(char* bufToPrintOnScreen, uint length){
 
 /*
   Copy bufToSaveInInput to input.buf
-  assumes input.r == input.w == input.e
 */
 void
 copyBufferToInputBuffer(char * bufToSaveInInput, uint length){
   for (uint i = 0; i < length; i++) {
     input.buf[(input.r + i) % INPUT_BUF] = bufToSaveInInput[i];
   }
-
   input.e = input.r + length;
 }
 
@@ -376,7 +354,7 @@ saveCommandInHistory(){
 /*
   this is the function that gets called by the sys_history and writes the requested command history in the buffer
 */
-int getCmdFromHistory(char *buffer, int historyId) {
+int history(char *buffer, int historyId) {
   // historyId != index of command in historyBufferArray.bufferArr
   if (historyId < 0 || historyId > MAX_HISTORY - 1)
     return 2;

@@ -544,7 +544,8 @@ gpi()
 		switch(p->state)
 		{
 			case UNUSED:
-				// cprintf("%d\t%s\tUNUSED %d\t%d\t%d\t%d\n", p->pid, p->name, (p->parent)->pid, p->sz, p->chan, p->killed);
+
+				//cprintf("%d\t%s\tUNUSED %d\t%d\t%d\t%d\n", p->pid, p->name, (p->parent)->pid, p->sz, p->chan, p->killed);
 				break;
 			case EMBRYO:
 				cprintf("%d\t%s\tEMBRYO %d\t%d\t%d\t%d\n", p->pid, p->name, (p->parent)->pid, p->sz, p->chan, p->killed);

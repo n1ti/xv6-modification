@@ -170,8 +170,7 @@ main(void)
     }
     if(fork1() != 0)
     {
-      
-      //wait();
+      //this is parent, wait here
       pid=wait2(&retime, &rutime, &stime);
       if (pid==-1)
       {
@@ -181,15 +180,9 @@ main(void)
     }
     else
     { 
+      //this is child execute here
       runcmd(parsecmd(buf));
-    	// pid=wait2(&retime, &rutime, &stime);
-      // if (pid==-1)
-      // {
-      //   printf(1 ,"exec failure");
-      // }
-      // else printf(1 ,"pid:%d retime:%d rutime:%d stime:%d\n", pid, retime, rutime, stime);
     }
-    //wait();
   }
   exit();
 }

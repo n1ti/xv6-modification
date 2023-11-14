@@ -110,7 +110,7 @@ sys_wait2(void)
 	*(int*)retime = curproc->retime;
 	*(int*)rutime = curproc->rutime;
 	*(int*)stime = curproc->stime;
-	cprintf("sys wait is called\n");
+	//cprintf("sys wait is called\n");
 	return res;
 
 }

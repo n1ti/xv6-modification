@@ -2,6 +2,7 @@
 // Input is from the keyboard or serial port.
 // Output is written to the screen and serial port.
 
+#include "console.h"
 #include "types.h"
 #include "defs.h"
 #include "param.h"
@@ -186,13 +187,31 @@ struct {
   uint e;  // Edit index
 } input;
 
+char charsToBeMoved[INPUT_BUF];  // temporary storage for input.buf in a certain context
+/*
+  this struct will hold the history buffer array
+  For ex:
+  If 5 commands are stored. In this case:
+  * 11,12,13,14,15 indices are occupied in the history table with 11 as the newest.
+  * lastCommandIndex == 11
+  * currentHistory ranges from 0 to 4 (i.e the displacement)
+  * init(currentHistory) = -1
+*/
+struct {
+  char bufferArr[MAX_HISTORY][INPUT_BUF]; // holds the actual command strings -
+  uint lengthsArr[MAX_HISTORY]; // this will hold the length of each command string
+  uint lastCommandIndex;  // the index of the last command entered to history
+  int numOfCommmandsInMem; // number of history commands in mem
+  int currentHistory; // holds the current history view -> displacement from the last command index 
+} historyBufferArray;
+
 #define C(x)  ((x)-'@')  // Control-x
 
 void
 consoleintr(int (*getc)(void))
 {
   int c, doprocdump = 0;
-
+  uint tempIndex;
   acquire(&cons.lock);
   while((c = getc()) >= 0){
     switch(c){
@@ -213,12 +232,44 @@ consoleintr(int (*getc)(void))
         consputc(BACKSPACE);
       }
       break;
+    case UP_ARROW:
+       if (historyBufferArray.currentHistory < historyBufferArray.numOfCommmandsInMem-1){ // current history means the oldest possible will be MAX_HISTORY-1
+          eraseCurrentLineOnScreen();
+          eraseContentOnInputBuffer();
+          historyBufferArray.currentHistory++;
+          tempIndex = (historyBufferArray.lastCommandIndex + historyBufferArray.currentHistory) % MAX_HISTORY;
+          copyBufferToScreen(historyBufferArray.bufferArr[tempIndex] , historyBufferArray.lengthsArr[tempIndex]);
+          copyBufferToInputBuffer(historyBufferArray.bufferArr[tempIndex] , historyBufferArray.lengthsArr[tempIndex]);
+        }
+        break;
+   case DOWN_ARROW:
+        switch(historyBufferArray.currentHistory){
+          case -1:
+            //does nothing
+            break;
+
+          case 0: //empty string on the console
+            eraseCurrentLineOnScreen();
+            eraseContentOnInputBuffer();
+            historyBufferArray.currentHistory--;
+            break;
+
+          default:
+            eraseCurrentLineOnScreen();
+            historyBufferArray.currentHistory--;
+            tempIndex = (historyBufferArray.lastCommandIndex + historyBufferArray.currentHistory)%MAX_HISTORY;
+            copyBufferToScreen(historyBufferArray.bufferArr[tempIndex] , historyBufferArray.lengthsArr[tempIndex]);
+            copyBufferToInputBuffer(historyBufferArray.bufferArr[tempIndex] , historyBufferArray.lengthsArr[tempIndex]);
+            break;
+        }
+        break;
     default:
       if(c != 0 && input.e-input.r < INPUT_BUF){
         c = (c == '\r') ? '\n' : c;
         input.buf[input.e++ % INPUT_BUF] = c;
         consputc(c);
         if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
+          saveCommandInHistory();
           input.w = input.e;
           wakeup(&input.r);
         }
@@ -230,6 +281,89 @@ consoleintr(int (*getc)(void))
   if(doprocdump) {
     procdump();  // now call procdump() wo. cons.lock held
   }
+}
+
+/*
+  Erase current line from screen
+*/
+void
+eraseCurrentLineOnScreen(void) {
+    while(input.e != input.w &&
+            input.buf[(input.e-1) % INPUT_BUF] != '\n'){
+        input.e--;
+        consputc(BACKSPACE);
+      }
+}
+
+/*
+  clear input buffer
+*/
+void
+eraseContentOnInputBuffer(){
+  input.e = input.r;
+}
+
+/*
+  print bufToPrintOnScreen on-screen
+*/
+void
+copyBufferToScreen(char* bufToPrintOnScreen, uint length){
+  uint i = 0;
+  while(length--) {
+    consputc(bufToPrintOnScreen[i]);
+    i++;
+  }
+}
+
+/*
+  Copy bufToSaveInInput to input.buf
+*/
+void
+copyBufferToInputBuffer(char * bufToSaveInInput, uint length){
+  for (uint i = 0; i < length; i++) {
+    input.buf[(input.r + i) % INPUT_BUF] = bufToSaveInInput[i];
+  }
+  input.e = input.r + length;
+}
+
+/*
+  Copy current command in input.buf to historyBufferArray (saved history)
+  @param length - length of command to be saved
+*/
+void
+saveCommandInHistory(){
+  uint len = input.e - input.r - 1; // -1 to remove the last '\n' character
+  if (len == 0) return; // to avoid blank commands to store in history
+
+  historyBufferArray.currentHistory = -1; // reseting the users history current viewed
+
+  if (historyBufferArray.numOfCommmandsInMem < MAX_HISTORY) {
+    historyBufferArray.numOfCommmandsInMem++;
+    // when we get to MAX_HISTORY commands in memory we keep on inserting to the array in a circular manner
+  }
+  historyBufferArray.lastCommandIndex = (historyBufferArray.lastCommandIndex - 1) % MAX_HISTORY;
+  historyBufferArray.lengthsArr[historyBufferArray.lastCommandIndex] = len;
+
+  // do not want to save in memory the last char '/n'
+  for (uint i = 0; i < len; i++) { 
+    historyBufferArray.bufferArr[historyBufferArray.lastCommandIndex][i] =  input.buf[(input.r + i) % INPUT_BUF];
+  }
+}
+
+
+/*
+  this is the function that gets called by the sys_history and writes the requested command history in the buffer
+*/
+int history(char *buffer, int historyId) {
+  // historyId != index of command in historyBufferArray.bufferArr
+  if (historyId < 0 || historyId > MAX_HISTORY - 1)
+    return 2;
+  if (historyId >= historyBufferArray.numOfCommmandsInMem)
+    return 1;
+  memset(buffer, '\0', INPUT_BUF);
+  int tempIndex = (historyBufferArray.lastCommandIndex + historyId) % MAX_HISTORY;
+  memmove(buffer, historyBufferArray.bufferArr[tempIndex], historyBufferArray.lengthsArr[tempIndex]);
+  return 0;
 }
 
 int
@@ -293,7 +427,8 @@ consoleinit(void)
   devsw[CONSOLE].write = consolewrite;
   devsw[CONSOLE].read = consoleread;
   cons.locking = 1;
-
+  historyBufferArray.numOfCommmandsInMem=0;
+  historyBufferArray.lastCommandIndex=0;
   ioapicenable(IRQ_KBD, 0);
 }
 

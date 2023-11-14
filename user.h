@@ -25,6 +25,7 @@ int sleep(int);
 int uptime(void);
 int gpi(void);
 int wait2(int*, int*, int*);
+int history(char*, int);
 
 // ulib.c
 int stat(const char*, struct stat*);

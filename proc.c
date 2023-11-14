@@ -545,6 +545,7 @@ gpi()
 		switch(p->state)
 		{
 			case UNUSED:
+				//cprintf("%d\t%s\tUNUSED %d\t%d\t%d\t%d\n", p->pid, p->name, (p->parent)->pid, p->sz, p->chan, p->killed);
 				break;
 			case EMBRYO:
 				cprintf("%d\t%s\tEMBRYO %d\t%d\t%d\t%d\n", p->pid, p->name, (p->parent)->pid, p->sz, p->chan, p->killed);
@@ -562,7 +563,7 @@ gpi()
 				cprintf("%d\t%s\tZOMBIE %d\t%d\t%d\t%d\n", p->pid, p->name, (p->parent)->pid, p->sz, p->chan, p->killed);
 				break;
 			default:
-				cprintf("yep working");
+				// cprintf("yep working");
 		}
 	
 	}

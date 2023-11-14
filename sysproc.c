@@ -112,5 +112,15 @@ sys_wait2(void)
 	*(int*)stime = curproc->stime;
 	//cprintf("sys wait is called\n");
 	return res;
-
+/*
+  This is the real function being called from syscall.c
+  [returns - 0 if suceeded, 1 if no history in the historyId given, 2 if illegal historyId]
+*/
+int 
+sys_history(void) {
+  char *buffer;
+  int historyId;
+  argptr(0, &buffer, 1);
+  argint(1, &historyId);
+  return history(buffer, historyId);
 }

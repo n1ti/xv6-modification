@@ -103,6 +103,7 @@ extern int sys_unlink(void);
 extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
+extern int sys_history(void);
 extern int sys_gpi(void);
 extern int sys_printsyscall(void);
 extern int sys_wait2(void);
@@ -129,6 +130,7 @@ static int (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
+[SYS_history] sys_history,
 [SYS_gpi]     sys_gpi,
 [SYS_wait2]   sys_wait2
 };
@@ -155,9 +157,11 @@ static char *syscallnames[] = {
 [SYS_link]    "link",
 [SYS_mkdir]   "mkdir",
 [SYS_close]   "close",
+[SYS_history] "history",
 [SYS_gpi]     "gpi",
 [SYS_wait2]   "wait2",
 };
+
 
 
 

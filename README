@@ -1,6 +1,14 @@
-## Modifications made to xv6
+----------------------------------------------------------------------------
+MODIFICATIONS MADE TO ORIGINAL XV6
+[Authors: Niti Shyamsukha, Sarvottam Swaroop]
 
-<br >
+1. System call tracing can be done by uncommenting flag in syscall.c
+2. ps syscall & command has been added: it gives all processes information.
+3. history syscall & command has been added: 16 old commands are stored. 
+4. Functionality for ↑ ↓ keys to access history added.
+5. Stats for all processes are displayed. 
+
+----------------------------------------------------------------------------
 
 NOTE: we have stopped maintaining the x86 version of xv6, and switched
 our efforts to the RISC-V version

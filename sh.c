@@ -173,12 +173,20 @@ main(void)
       runcmd(parsecmd(buf));
       //wait();
       pid=wait2(&retime, &rutime, &stime);
-	    printf(1 ,"pid:%d retime:%d rutime:%d stime:%d\n", pid, retime, rutime, stime);
+      if (pid==-1)
+      {
+        printf(1 ,"exec failure");
+      }
+      else printf(1 ,"pid:%d retime:%d rutime:%d stime:%d\n", pid, retime, rutime, stime);
     }
     else
     {
-    	pid=wait2(&retime, &rutime, &stime);
-	    printf(1 ,"pid:%d retime:%d rutime:%d stime:%d\n", pid, retime, rutime, stime);
+    	// pid=wait2(&retime, &rutime, &stime);
+      if (pid==-1)
+      {
+        printf(1 ,"exec failure");
+      }
+      else printf(1 ,"pid:%d retime:%d rutime:%d stime:%d\n", pid, retime, rutime, stime);
     }
     //wait();
   }

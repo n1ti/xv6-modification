@@ -106,7 +106,7 @@ sys_wait2(void)
  	argint(0, &retime);
 	argint(1, &rutime);
 	argint(2, &stime);
-	res = sys_wait();
+	res = wait();
 	*(int*)retime = curproc->retime;
 	*(int*)rutime = curproc->rutime;
 	*(int*)stime = curproc->stime;

@@ -88,6 +88,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->ctime = ticks;
 
   release(&ptable.lock);
 
@@ -544,7 +545,6 @@ gpi()
 		switch(p->state)
 		{
 			case UNUSED:
-
 				//cprintf("%d\t%s\tUNUSED %d\t%d\t%d\t%d\n", p->pid, p->name, (p->parent)->pid, p->sz, p->chan, p->killed);
 				break;
 			case EMBRYO:
@@ -571,4 +571,31 @@ gpi()
 	return 23;
 
 
+}
+
+void
+updatestatistics(){
+	struct proc *p;
+	acquire(&ptable.lock);
+	for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+	{
+		switch(p->state)
+		{
+			case SLEEPING:
+				p->stime++;
+			break;
+
+			case RUNNABLE:
+				p->retime++;
+			break;
+			
+			case RUNNING:
+				p->rutime++;
+			break;
+
+			default:
+			;
+		}
+	}
+	release(&ptable.lock);
 }

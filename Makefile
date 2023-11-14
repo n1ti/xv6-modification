@@ -182,6 +182,7 @@ UPROGS=\
 	_wc\
 	_zombie\
 	_ps\
+	_wait2\
 	_testhistory\
 
 fs.img: mkfs README $(UPROGS)
@@ -255,6 +256,7 @@ EXTRA=\
 	testhistory.c\
 	printf.c umalloc.c\
 	ps.c\
+	wait2.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
 

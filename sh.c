@@ -167,7 +167,11 @@ main(void)
 {
   static char buf[100];
   int fd;
-
+  int retime, rutime, stime, pid;
+  retime = 0;
+  rutime =0;
+  stime  =0;
+  pid = 0;
   // Ensure that three file descriptors are open.
   while((fd = open("console", O_RDWR)) >= 0){
     if(fd >= 3){
@@ -177,22 +181,38 @@ main(void)
   }
 
   // Read and run input commands.
-  while(getcmd(buf, sizeof(buf)) >= 0){
-    if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' '){
+  while(getcmd(buf, sizeof(buf)) >= 0)
+  {
+    if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' ')
+    {
       // Chdir must be called by the parent, not the child.
       buf[strlen(buf)-1] = 0;  // chop \n
       if(chdir(buf+3) < 0)
         printf(2, "cannot cd %s\n", buf+3);
       continue;
     }
-    if(buf[0] == 'h' && buf[1] == 'i' && buf[2] == 's' && buf[3] == 't'
-        && buf[4] == 'o' && buf[5] == 'r' && buf[6] == 'y' && buf[7] == '\n') {
+     if(buf[0] == 'h' && buf[1] == 'i' && buf[2] == 's' && buf[3] == 't'
+        && buf[4] == 'o' && buf[5] == 'r' && buf[6] == 'y' && buf[7] == '\n') 
+    {
       printHistory();
       continue;
     }
-    if(fork1() == 0)
+    if(fork1() != 0)
+    {
+      //this is parent, wait here
+      pid=wait2(&retime, &rutime, &stime);
+      if (pid==-1)
+      {
+        printf(1 ,"exec failure");
+      }
+      else printf(1 ,"pid:%d retime:%d rutime:%d stime:%d\n", pid, retime, rutime, stime);
+    }
+    else
+    { 
+      //this is child execute here
       runcmd(parsecmd(buf));
-    wait();
+    }
+ 
   }
   exit();
 }

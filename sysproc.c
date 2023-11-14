@@ -95,6 +95,23 @@ sys_gpi(void)
 	return gpi();
 }
 
+int
+sys_wait2(void)
+{
+  	struct proc *curproc = myproc();
+  	int res;
+  	int retime = 0;
+  	int rutime = 0;
+	int stime = 0;
+ 	argint(0, &retime);
+	argint(1, &rutime);
+	argint(2, &stime);
+	res = wait();
+	*(int*)retime = curproc->retime;
+	*(int*)rutime = curproc->rutime;
+	*(int*)stime = curproc->stime;
+	//cprintf("sys wait is called\n");
+	return res;
 /*
   This is the real function being called from syscall.c
   [returns - 0 if suceeded, 1 if no history in the historyId given, 2 if illegal historyId]

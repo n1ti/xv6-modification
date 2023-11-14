@@ -171,12 +171,14 @@ main(void)
     if(fork1() != 0)
     {
       runcmd(parsecmd(buf));
-      wait();
+      //wait();
+      pid=wait2(&retime, &rutime, &stime);
+	    printf(1 ,"pid:%d retime:%d rutime:%d stime:%d\n", pid, retime, rutime, stime);
     }
     else
     {
     	pid=wait2(&retime, &rutime, &stime);
-	printf(1 ,"pid:%d retime:%d rutime:%d stime:%d\n", pid, retime, rutime, stime);
+	    printf(1 ,"pid:%d retime:%d rutime:%d stime:%d\n", pid, retime, rutime, stime);
     }
     //wait();
   }
